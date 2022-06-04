@@ -1,4 +1,4 @@
-import socket
+impimport socket
 import chatlib  # To use chatlib functions or consts, use chatlib.****
 SERVER_IP = "127.0.0.1"  # Our server will run on same computer as client
 SERVER_PORT = 5678
@@ -27,7 +27,7 @@ def recv_message_and_parse(client_socket):
     If error occured, will return None, None
     """
     try:
-        data = client_socket.recv(1024)
+        data = client_socket.recv(100211)
         data = data.decode()
         cmd, msg = chatlib.parse_message(data)
         if cmd is not None or msg is not None:
@@ -57,7 +57,7 @@ def login(client_socket):
     password = input("Please enter password: \n")
     login_msg = chatlib.join_data([username, password])
     build_and_send_message(client_socket, 'LOGIN', login_msg)
-    data = chatlib.parse_message(client_socket.recv(1024))
+    data = chatlib.parse_message(client_socket.recv(100211))
     response = str(data[:17])
     response = response.split()
     while response == "ERROR":
@@ -65,7 +65,7 @@ def login(client_socket):
         password = input("login failed. enter username again: \n")
         login_msg = username + "#" + password
         build_and_send_message(client_socket, "LOGIN", login_msg)
-        data = chatlib.parse_message(client_socket.recv(1024))
+        data = chatlib.parse_message(client_socket.recv(100211))
         response = str(data[:17])
         response = response.split()
     if response == "LOGIN_OK":
@@ -126,24 +126,21 @@ def main():
     client_socket.connect(server_address)
     login(client_socket)
     keep_going = True
-    while keep_going:
-        client_response = input(
-            "Hello there player! To play, enter 1. To view your score, enter 2. To view the highscores, enter 3. To get logged users, enter 4. To log out, enter 5. To: ")
-        if client_response == "1":
+    while keep_going is True:
+        command = input("enter your command: ")
+        if command == 'get_score':
+            get_score(client_socket)
+        if command == 'play_question':
             play_question(client_socket)
-        elif client_response == "2":
-            username = input("Enter username")
-            msg_code, msg = build_send_recv_parse(client_socket, 'MY_SCORE', username)
-            print(msg.decode("utf-8"))
-        elif client_response == "3":
+        if command == 'get_highscore':
             get_highscore(client_socket)
-        elif client_response == "4":
+        if command == 'get_logged_users':
             get_logged_users(client_socket)
-        elif client_response == "5":
+        if command == 'logout':
             logout(client_socket)
             keep_going = False
-        else:
-            print("Invalid Input")
+    client_socket.close()
+
 
 if __name__ == '__main__':
     main()
