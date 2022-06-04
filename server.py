@@ -1,11 +1,8 @@
-##############################################################################
-# server.py
-##############################################################################
-
 import socket
 import chatlib
 import random
 import select
+from select import select
 # GLOBALS
 users = {}
 questions = {}
@@ -28,14 +25,14 @@ def build_and_send_message(client_socket, cmd, msg):
 
 def recv_message_and_parse(client_socket):
     try:
-        data = client_socket.recv(1024)
+        data = client_socket.recv(10211)
         data = data.decode()
         cmd, msg = chatlib.parse_message(data)
         if cmd is not None or msg is not None:
             print("[CLIENT ", cmd + " " + msg)
             return cmd, msg
         else:
-            cmd, msg = ''
+            cmd, msg = '', ''
             return cmd, msg
     except ConnectionResetError:
         return None, None
@@ -75,7 +72,7 @@ def load_user_database():
     Recieves: -
     Returns: user dictionary
     """
-    list_of_users = open("users.txt").read().split('\n')
+    list_of_users = open("users.txt").read().splitlines()
     users = {}
     for user_l in range(len(list_of_users)):
         user = list_of_users[user_l].split('#')
@@ -108,13 +105,15 @@ def load_questions():
     Returns: questions dictionary
     """
     list_questions = open("questions.txt").read().split('\n')
-    questions = {}
-    for q in range(len(list_questions)):
-        question = list_questions[q].split('#')
-        answers = [question[1], question[2], question[3], question[4]]
-        ques = {"question": question[0], "answers": answers, "correct": question[5]}
-        questions[q] = ques
-    return questions
+    questions_to_load = {}
+    for l in range(len(list_questions)):
+        question = list_questions[l].split('#')
+        #answers = [question[1], question[2], question[3], question[4]]
+        ques = {"question": question[0], "answers": (question[1], question[2], question[3], question[4]),
+                "correct": int(question[5])}
+        questions_to_load[l] = ques
+
+    return questions_to_load
 
 
 def setup_socket():
@@ -180,26 +179,26 @@ def handle_answer_message(client_socket, username, answer):
 
 def handle_highest_score(client_socket):
     global users
-    u_score = []
-    u_score2 = []
+    user_score = []
+    user_score2 = []
     for us in users:
         user = users[us]
         score = users[us]["score"]
         print(score)
-        u_score.append((us, score))
-    for i in range(len(u_score)):
-        u_score2.append((u_score[i][1], u_score[i][0]))
-    u_score2.sort(reverse=True)
-    print(u_score2)
-    build_and_send_message(client_socket, 'ALL_SCORE', str(u_score2[0]) + "\n" + str(u_score2[1]) + "\n" + str(u_score2[2]) + "\n" + str(u_score2[3]) + "\n" + str(u_score2[4]))
+        user_score.append((us, score))
+    for i in range(len(user_score)):
+        user_score2.append((user_score[i][1], user_score[i][0]))
+    user_score2.sort(reverse=True)
+    print(user_score2)
+    build_and_send_message(client_socket, 'ALL_SCORE', str(user_score2[0]) + "\n" + str(user_score2[1]) + "\n" + str(user_score2[2]) + "\n" + str(user_score2[3]) + "\n" + str(user_score2[4]))
 
 
 def handle_logged_message(client_socket):
     global logged_users
     logged_users_list = logged_users.values()
     message = ""
-    for u in logged_users_list:
-        message += u + ","
+    for user in logged_users_list:
+        message += user + ","
     build_and_send_message(client_socket, 'LOGGED_ANSWER', message)
 
 
@@ -287,36 +286,34 @@ def main():
     # Initializes global users and questions dictionaries using load functions, will be used later
     global users
     global questions
-    global logged_users
-    global messages_to_send
-    global open_client_sockets
-    print("Welcome to Trivia Server!")
-    server_socket = setup_socket()
-    questions = load_questions()
     users = load_user_database()
+    questions = load_questions()
+    server = setup_socket()
+    client_sockets = [server]
+
     while True:
-        current_list, wait_list, xlist = select.select([server_socket] + open_client_sockets, open_client_sockets, [])
-        for current_socket in current_list:
-            if current_socket is server_socket:
-                (new_socket, address) = server_socket.accept()
-                print("new socket connected to server: ", new_socket.getpeername())
-                open_client_sockets.append(new_socket)
-                cmd, msg = recv_message_and_parse(new_socket)
-                handle_client_message(new_socket, cmd, msg)
+        read_list, write_list, exceptional_list = select.select(client_sockets, client_sockets, [])
+        for conn in read_list:
+            if conn is server:
+                client, address = server.accept()
+                print(f'Client {address} connected')
+                client_sockets.append(client)
             else:
-                print('New data from client')
-                cmd, msg = recv_message_and_parse(current_socket)
-                u_id = current_socket.getpeername()
-                if cmd is None or cmd == 'LOGOUT':
-                    open_client_sockets.remove(current_socket)
-                    print(f"Connection with client {u_id}  is closed.")
-                    handle_client_message(current_socket, cmd, msg)
+                cmd, data = recv_message_and_parse(conn)
+                if cmd is None or cmd == chatlib.PROTOCOL_CLIENT['logout_msg']:
+                    handle_logout_message(conn)
+                    client_sockets.remove(conn)
+                    print(f'Connection terminated')
                 else:
-                    handle_client_message(current_socket, cmd, msg)
+                    handle_client_message(conn, cmd, data)
 
-        send_waiting_messages(wait_list)
-# Implement code ...
+        for message in messages_to_send:
+            conn, data = message
+            if conn in write_list:
+                while conn in client_sockets:
+                    conn.sendall(data.encode())
 
+                messages_to_send.clear()
 
 
 if __name__ == '__main__':
