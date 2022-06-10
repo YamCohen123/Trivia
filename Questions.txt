@@ -1,0 +1,7 @@
+{
+    "1": {"question": "What is the capital city of USA?", "answers": ["Washington DC", "New York", "Los Angeles", "Detroit"], "correct": 1},
+    "2": {"question": "Who wrote the song "Yellow submarine?", "answers": ["Elvis Presley", "The Beatles", "Led Zeppelin", "Britney Spears"], "correct":2},
+    "3": {"question": "How much is 1+1?", "answers": ["5", "6", "7", "2"], "correct": 4},
+    "4": {"question": "Who is the wealthiest female musician?", "answers": ["Britney Spears", "Rihanna", "Shakira", "Adele"], "correct": 2},
+    "5": {"question": "At what temperature does water freeze?", "answers": ["-10 degrees", "-1 degrees", "-25 degrees", "0 degrees"], "correct": 4}
+}
