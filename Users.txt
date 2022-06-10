@@ -1,0 +1,13 @@
+{
+    "abc": {"password": "123", "score": 0, "questions_asked": [], "connected_ip": ""},
+    "test": {"password": "test", "score": 0, "questions_asked": [], "connected_ip": ""},
+    "admin": {"password": "AaBbCcDd", "score": 0, "questions_asked": [], "connected_ip": ""},
+    "blabla": {"password": "hello", "score": 0, "questions_asked": [], "connected_ip": ""},
+    "super": {"password": "trooper", "score": 0, "questions_asked": [], "connected_ip": ""},
+    "super2": {"password": "trooper2", "score": 0, "questions_asked": [], "connected_ip": ""},
+    "bilby": {"password": "m0unt41ns", "score": 0, "questions_asked": [], "connected_ip": ""},
+    "trivia_king": {"password": "KING", "score": 0, "questions_asked": [], "connected_ip": ""},
+    "hackerman": {"password": "TriCeRaCop", "score": 0, "questions_asked": [], "connected_ip": ""},
+    "mrhemulin": {"password": "flowerz", "score": 0, "questions_asked": [], "connected_ip": ""},
+    "bambababy": {"password": "peanuts5", "score": 0, "questions_asked": [], "connected_ip": ""}
+}
