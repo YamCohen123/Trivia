@@ -32,7 +32,7 @@ def build_message(cmd, data):
         Gets command name (str) and data field (str) and creates a valid protocol message
         Returns: str, or None if error occurred
         """
-    data_length = len(str(data))
+    data_length = len(data)
     cmd_length = len(cmd)
     if data_length > MAX_DATA_LENGTH:
         return ERROR_RETURN
@@ -41,21 +41,21 @@ def build_message(cmd, data):
     else:
         padded_cmd = cmd.strip().ljust(CMD_FIELD_LENGTH)
         padded_length = str(data_length).zfill(LENGTH_FIELD_LENGTH)
-        full_msg = f"{padded_cmd}{DELIMITER}{padded_length}{DELIMITER}{str(data)}"
+        full_msg = f"{padded_cmd}{DELIMITER}{padded_length}{DELIMITER}{data}"
         return full_msg
 
 
 def parse_message(full_msg):
     """
         Parses protocol message and returns command name and data field
-        Returns: cmd (str), data (str). If some error occurred, returns None, None
+        Returns: cmd (str), data (str). If some error occured, returns None, None
         """
     if len(full_msg) < CMD_FIELD_LENGTH + 1 + LENGTH_FIELD_LENGTH + 1:
         return (
             ERROR_RETURN, ERROR_RETURN)
     cmd_str = full_msg[0:CMD_FIELD_LENGTH]
     length = full_msg[CMD_FIELD_LENGTH + 1:CMD_FIELD_LENGTH + 1 + LENGTH_FIELD_LENGTH]
-    if full_msg[CMD_FIELD_LENGTH] == DELIMITER or full_msg[(CMD_FIELD_LENGTH + LENGTH_FIELD_LENGTH + 1)] == DELIMITER:
+    if full_msg[CMD_FIELD_LENGTH] != DELIMITER or full_msg[(CMD_FIELD_LENGTH + LENGTH_FIELD_LENGTH + 1)] != DELIMITER:
         return ERROR_RETURN, ERROR_RETURN
     elif not length.strip().isdigit():
         return ERROR_RETURN, ERROR_RETURN
@@ -72,7 +72,7 @@ def split_data(msg, expected_fields):
     """
         Helper method. gets a string and number of expected fields in it. Splits the string
         using protocol's data field delimiter (|#) and validates that there are correct number of fields.
-        Returns: list of fields if all ok. If some error occurred, returns None
+        Returns: list of fields if all ok. If some error occured, returns None
         """
     splitted = msg.split(DATA_DELIMITER)
     if len(splitted) == expected_fields:
@@ -87,3 +87,4 @@ def join_data(msg_fields):
         Returns: string that looks like cell1#cell2#cell3
         """
     return DATA_DELIMITER.join(msg_fields)
+
